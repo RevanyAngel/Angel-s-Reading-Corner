@@ -79,24 +79,7 @@ const bookGenreInput = document.getElementById('book-genre');
 const bookRatingEl = document.getElementById('book-rating');
 const btnSaveBookText = document.getElementById('btn-save-book-text');
 
-// Book Detail modal
-const modalBookDetail = document.getElementById('modal-book-detail');
-const detailCoverImg = document.getElementById('detail-cover-img');
-const detailTitle = document.getElementById('detail-title');
-const detailGenre = document.getElementById('detail-genre');
-const detailRating = document.getElementById('detail-rating');
-const detailDate = document.getElementById('detail-date');
-const detailPages = document.getElementById('detail-pages');
-const notesList = document.getElementById('notes-list');
-const notesEmpty = document.getElementById('notes-empty');
 
-// Note form
-const noteFormWrap = document.getElementById('note-form-wrap');
-const formNote = document.getElementById('form-note');
-const noteEditId = document.getElementById('note-edit-id');
-const noteTitleInput = document.getElementById('note-title');
-const noteDescInput = document.getElementById('note-desc');
-const notePageInput = document.getElementById('note-page');
 
 // Stats modal
 const modalStats = document.getElementById('modal-stats');
@@ -423,246 +406,6 @@ function resetBookForm() {
 }
 
 // ============================================
-// BOOK DETAIL
-// ============================================
-async function openBookDetail(bookId) {
-  currentBookId = bookId;
-  const user = getCurrentUser();
-  if (!user) return;
-
-  try {
-    const bookRef = doc(db, 'users', user.uid, 'books', bookId);
-    const bookSnap = await getDoc(bookRef);
-
-    if (!bookSnap.exists()) {
-      showToast('Book not found');
-      return;
-    }
-
-    const book = bookSnap.data();
-
-    // Populate detail
-    detailTitle.textContent = book.title;
-    detailGenre.textContent = book.genre || 'N/A';
-    detailRating.innerHTML = generateStars(book.rating || 0);
-
-    const dateRead = book.dateRead
-      ? (book.dateRead.toDate ? book.dateRead.toDate() : new Date(book.dateRead))
-      : null;
-    detailDate.querySelector('span').textContent = dateRead
-      ? dateRead.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-      : 'N/A';
-    detailPages.querySelector('span').textContent = book.pageCount ? `${book.pageCount} pages` : 'N/A';
-
-    if (book.coverUrl) {
-      detailCoverImg.src = book.coverUrl;
-      detailCoverImg.alt = book.title;
-      detailCoverImg.style.display = 'block';
-    } else {
-      detailCoverImg.src = '';
-      detailCoverImg.alt = '';
-      detailCoverImg.parentElement.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:2.5rem;background:linear-gradient(135deg, var(--beige-100), var(--beige-200));">📖</div>`;
-    }
-
-    // Hide note form
-    noteFormWrap.style.display = 'none';
-    formNote.reset();
-    noteEditId.value = '';
-
-    // Load notes
-    await loadNotes(bookId);
-
-    openModal(modalBookDetail);
-  } catch (error) {
-    console.error('Error opening book detail:', error);
-    showToast('Failed to load book details');
-  }
-}
-
-// Edit book button
-document.getElementById('btn-edit-book').addEventListener('click', async () => {
-  const user = getCurrentUser();
-  if (!user || !currentBookId) return;
-
-  try {
-    const bookRef = doc(db, 'users', user.uid, 'books', currentBookId);
-    const bookSnap = await getDoc(bookRef);
-    if (!bookSnap.exists()) return;
-
-    const book = bookSnap.data();
-
-    // Close detail, open edit modal
-    closeModal(modalBookDetail);
-
-    // Populate form
-    resetBookForm();
-    bookEditId.value = currentBookId;
-    modalBookTitle.textContent = 'Edit Book';
-    btnSaveBookText.textContent = 'Update Book';
-    bookTitleInput.value = book.title || '';
-    bookPagesInput.value = book.pageCount || '';
-    bookGenreInput.value = book.genre || '';
-    selectedRating = book.rating || 0;
-    updateStarDisplay();
-
-    const dateRead = book.dateRead
-      ? (book.dateRead.toDate ? book.dateRead.toDate() : new Date(book.dateRead))
-      : null;
-    if (dateRead) {
-      bookDateInput.value = dateRead.toISOString().split('T')[0];
-    }
-
-    if (book.coverUrl) {
-      coverPreview.innerHTML = `<img src="${book.coverUrl}" alt="Cover preview">`;
-      coverPreview.classList.add('has-image');
-    }
-
-    openModal(modalAddBook);
-  } catch (error) {
-    console.error('Error loading book for edit:', error);
-    showToast('Failed to load book');
-  }
-});
-
-// Delete book button
-document.getElementById('btn-delete-book').addEventListener('click', () => {
-  deleteTarget = { type: 'book', bookId: currentBookId };
-  confirmTitle.textContent = 'Delete this book?';
-  confirmDesc.textContent = 'This will permanently delete the book and all its notes.';
-  openModal(modalConfirmDelete);
-});
-
-// ============================================
-// NOTES CRUD
-// ============================================
-async function loadNotes(bookId) {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  notesList.innerHTML = '';
-  notesEmpty.style.display = 'none';
-
-  try {
-    const notesRef = collection(db, 'users', user.uid, 'books', bookId, 'notes');
-    const notesSnap = await getDocs(query(notesRef, orderBy('createdAt', 'desc')));
-
-    if (notesSnap.empty) {
-      notesEmpty.style.display = 'block';
-      return;
-    }
-
-    notesSnap.docs.forEach((noteDoc, index) => {
-      const note = noteDoc.data();
-      const noteEl = document.createElement('div');
-      noteEl.className = 'note-card';
-      noteEl.style.animationDelay = `${index * 0.05}s`;
-
-      const createdAt = note.createdAt
-        ? (note.createdAt.toDate ? note.createdAt.toDate() : new Date(note.createdAt))
-        : null;
-      const dateStr = createdAt
-        ? createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-        : '';
-
-      noteEl.innerHTML = `
-        <div class="note-card-header">
-          <span class="note-card-title">${escapeHtml(note.title)}</span>
-          <div class="note-card-actions">
-            <button class="btn-note-edit" data-note-id="${noteDoc.id}" title="Edit">✏️</button>
-            <button class="btn-note-delete" data-note-id="${noteDoc.id}" title="Delete">🗑️</button>
-          </div>
-        </div>
-        <p class="note-card-desc">${escapeHtml(note.description)}</p>
-        <div class="note-card-footer">
-          ${note.pageOrChapter ? `<span>📄 ${escapeHtml(note.pageOrChapter)}</span>` : ''}
-          ${dateStr ? `<span>📅 ${dateStr}</span>` : ''}
-        </div>
-      `;
-
-      // Edit note
-      noteEl.querySelector('.btn-note-edit').addEventListener('click', () => {
-        noteEditId.value = noteDoc.id;
-        noteTitleInput.value = note.title;
-        noteDescInput.value = note.description;
-        notePageInput.value = note.pageOrChapter || '';
-        noteFormWrap.style.display = 'block';
-        noteFormWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      });
-
-      // Delete note
-      noteEl.querySelector('.btn-note-delete').addEventListener('click', () => {
-        deleteTarget = { type: 'note', bookId: currentBookId, noteId: noteDoc.id };
-        confirmTitle.textContent = 'Delete this note?';
-        confirmDesc.textContent = 'This note will be permanently removed.';
-        openModal(modalConfirmDelete);
-      });
-
-      notesList.appendChild(noteEl);
-    });
-  } catch (error) {
-    console.error('Error loading notes:', error);
-    showToast('Failed to load notes');
-  }
-}
-
-// Show add note form
-document.getElementById('btn-add-note').addEventListener('click', () => {
-  formNote.reset();
-  noteEditId.value = '';
-  noteFormWrap.style.display = 'block';
-  noteFormWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-});
-
-// Cancel note form
-document.getElementById('btn-cancel-note').addEventListener('click', () => {
-  noteFormWrap.style.display = 'none';
-  formNote.reset();
-  noteEditId.value = '';
-});
-
-// Save note
-formNote.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = getCurrentUser();
-  if (!user || !currentBookId) return;
-
-  const btnSaveNote = document.getElementById('btn-save-note');
-  btnSaveNote.disabled = true;
-  btnSaveNote.textContent = 'Saving...';
-
-  try {
-    const noteData = {
-      title: noteTitleInput.value.trim(),
-      description: noteDescInput.value.trim(),
-      pageOrChapter: notePageInput.value.trim(),
-    };
-
-    const editId = noteEditId.value;
-
-    if (editId) {
-      const noteRef = doc(db, 'users', user.uid, 'books', currentBookId, 'notes', editId);
-      await updateDoc(noteRef, noteData);
-      showToast('Note updated! ✏️');
-    } else {
-      noteData.createdAt = serverTimestamp();
-      await addDoc(collection(db, 'users', user.uid, 'books', currentBookId, 'notes'), noteData);
-      showToast('Note added! 📝');
-    }
-
-    noteFormWrap.style.display = 'none';
-    formNote.reset();
-    noteEditId.value = '';
-    await loadNotes(currentBookId);
-  } catch (error) {
-    console.error('Error saving note:', error);
-    showToast('Failed to save note');
-  } finally {
-    btnSaveNote.disabled = false;
-    btnSaveNote.textContent = 'Save Note';
-  }
-});
-
-// ============================================
 // DELETE CONFIRM
 // ============================================
 btnConfirmDelete.addEventListener('click', async () => {
@@ -687,7 +430,6 @@ btnConfirmDelete.addEventListener('click', async () => {
       showToast('Book deleted 🗑️');
 
       closeModal(modalConfirmDelete);
-      closeModal(modalBookDetail);
       await loadBooks();
     } else if (deleteTarget.type === 'note') {
       const noteRef = doc(db, 'users', user.uid, 'books', deleteTarget.bookId, 'notes', deleteTarget.noteId);
@@ -695,7 +437,6 @@ btnConfirmDelete.addEventListener('click', async () => {
       showToast('Note deleted 🗑️');
 
       closeModal(modalConfirmDelete);
-      await loadNotes(currentBookId);
     }
   } catch (error) {
     console.error('Error deleting:', error);
