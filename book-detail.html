@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Book Notes & Insights — Angel's Reading Corner">
+  <title>Book Details — Angel's Reading Corner</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/library.css">
+  <link rel="stylesheet" href="css/book-detail.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <!-- ===== Top Bar ===== -->
+  <header class="top-bar">
+    <a href="library.html" class="top-bar-brand" aria-label="Back to library">
+      <span class="brand-icon">←</span>
+      <span class="brand-name">Back to Library</span>
+    </a>
+    <div class="top-bar-actions">
+      <div id="user-avatar" class="user-avatar" title="Account">
+        <img id="user-avatar-img" src="" alt="User">
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== User Menu Dropdown ===== -->
+  <div id="user-menu" class="user-menu" style="display: none;">
+    <div class="user-menu-info">
+      <img id="menu-avatar" src="" alt="User avatar">
+      <div>
+        <p id="menu-name" class="menu-name"></p>
+        <p id="menu-email" class="menu-email"></p>
+      </div>
+    </div>
+    <button id="btn-menu-logout" class="btn btn-secondary btn-sm" style="width:100%;">Sign Out</button>
+  </div>
+
+  <!-- ===== Main Content Container ===== -->
+  <main class="book-detail-main container">
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-state">
+      <div class="loader"></div>
+      <p>Loading book details & notes...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="empty-state" style="display: none;">
+      <div class="empty-illustration">⚠️</div>
+      <h2>Book not found</h2>
+      <p>This book might have been deleted or doesn't exist.</p>
+      <a href="library.html" class="btn btn-primary" style="margin-top: 1rem;">Go back to Library</a>
+    </div>
+
+    <!-- Detail Container -->
+    <div id="detail-container" class="detail-container" style="display: none;">
+      <!-- Hero Card -->
+      <section class="card book-hero-card animate-slide-up">
+        <div class="book-hero-layout">
+          <div class="book-hero-cover" id="detail-cover-box">
+            <img id="detail-cover-img" src="" alt="Book cover">
+          </div>
+          <div class="book-hero-info">
+            <div class="book-hero-header">
+              <span id="detail-genre" class="genre-badge"></span>
+              <div id="detail-rating" class="star-rating-display"></div>
+            </div>
+            <h1 id="detail-title" class="book-hero-title"></h1>
+            <div class="book-hero-meta">
+              <span id="detail-date" class="meta-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span></span>
+              </span>
+              <span id="detail-pages" class="meta-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                <span></span>
+              </span>
+            </div>
+            <div class="book-hero-actions">
+              <button id="btn-edit-book" class="btn btn-secondary btn-sm">✏️ Edit Book</button>
+              <button id="btn-delete-book" class="btn btn-danger btn-sm">🗑️ Delete Book</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notes Section -->
+      <section class="notes-page-section animate-slide-up">
+        <div class="notes-page-header">
+          <div class="notes-title-wrap">
+            <h2>📝 Notes & Insights</h2>
+            <span id="notes-count-badge" class="notes-count-badge">0 notes</span>
+          </div>
+          <button id="btn-add-note" class="btn btn-primary btn-sm">+ Add Note</button>
+        </div>
+
+        <!-- Add/Edit Note Form -->
+        <div id="note-form-wrap" class="note-form-wrap card" style="display: none;">
+          <h3 id="note-form-title" style="margin-bottom: 0.8rem; font-size: 0.95rem;">New Note</h3>
+          <form id="form-note" class="form-note" autocomplete="off">
+            <input type="hidden" id="note-edit-id" value="">
+            <div class="form-group">
+              <label for="note-title">Note Title</label>
+              <input type="text" id="note-title" placeholder="e.g., Key take-away from Chapter 3" required>
+            </div>
+            <div class="form-group">
+              <label for="note-desc">Description / Thoughts</label>
+              <textarea id="note-desc" placeholder="Write your insights, quotes, or learnings here..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="note-page">Page / Chapter (optional)</label>
+              <input type="text" id="note-page" placeholder="e.g., Page 42 or Chapter 5">
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-note">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="btn-save-note">Save Note</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Notes List -->
+        <div id="notes-list" class="notes-list">
+          <!-- Notes rendered dynamically -->
+        </div>
+
+        <div id="notes-empty" class="empty-state notes-empty" style="display: none;">
+          <div class="empty-illustration" style="font-size: 2.5rem;">✍️</div>
+          <h3>No notes recorded yet</h3>
+          <p>Add your first note or chapter insight for this book!</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ===== MODAL: Edit Book ===== -->
+  <div id="modal-add-book" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-book-title">Edit Book</h2>
+        <button class="modal-close" data-close="modal-add-book" aria-label="Close">✕</button>
+      </div>
+      <form id="form-book" class="form-book" autocomplete="off">
+        <input type="hidden" id="book-edit-id" value="">
+
+        <div class="form-group">
+          <label for="book-title">Book Title</label>
+          <input type="text" id="book-title" placeholder="Enter book title..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="book-cover-input">Book Cover</label>
+          <div class="cover-upload" id="cover-upload-area">
+            <input type="file" id="book-cover-input" accept="image/*" class="sr-only">
+            <div id="cover-preview" class="cover-preview">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span>Tap to change cover</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="book-date">Date Read</label>
+            <input type="date" id="book-date" required>
+          </div>
+          <div class="form-group">
+            <label for="book-pages">Pages</label>
+            <input type="number" id="book-pages" placeholder="0" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="book-genre">Genre</label>
+          <select id="book-genre" required>
+            <option value="" disabled selected>Select genre...</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Non-Fiction">Non-Fiction</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Romance">Romance</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Horror">Horror</option>
+            <option value="Self-Help">Self-Help</option>
+            <option value="Biography">Biography</option>
+            <option value="History">History</option>
+            <option value="Science">Science</option>
+            <option value="Philosophy">Philosophy</option>
+            <option value="Psychology">Psychology</option>
+            <option value="Business">Business</option>
+            <option value="Poetry">Poetry</option>
+            <option value="Manga">Manga</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Rating</label>
+          <div class="star-rating" id="book-rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-add-book">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-book">
+            <span id="btn-save-book-text">Update Book</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: Delete Confirm ===== -->
+  <div id="modal-confirm-delete" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content modal-confirm-content">
+      <div class="confirm-body">
+        <span class="confirm-icon">⚠️</span>
+        <h3 id="confirm-title">Delete this book?</h3>
+        <p id="confirm-desc">This will permanently delete the book and all its notes.</p>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" data-close="modal-confirm-delete">Cancel</button>
+        <button id="btn-confirm-delete" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="js/book-detail.js"></script>
+</body>
+</html>

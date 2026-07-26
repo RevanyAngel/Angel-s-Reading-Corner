@@ -1,0 +1,117 @@
+// ============================================
+// Landing Page Logic — Angel's Reading Corner
+// ============================================
+import { db } from './firebase-config.js';
+import { signInWithGoogle, onAuthChange, getCurrentUser } from './auth.js';
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+
+// DOM Elements
+const authSection = document.getElementById('auth-section');
+const quoteSection = document.getElementById('quote-section');
+const welcomeSection = document.getElementById('welcome-section');
+const ctaSection = document.getElementById('cta-section');
+const btnGoogleSignin = document.getElementById('btn-google-signin');
+const quoteCoverImg = document.getElementById('quote-cover-img');
+const quoteNoteTitle = document.getElementById('quote-note-title');
+const quoteNoteDesc = document.getElementById('quote-note-desc');
+const quoteBookTitle = document.getElementById('quote-book-title');
+
+// Google Sign-In handler
+btnGoogleSignin.addEventListener('click', async () => {
+  try {
+    btnGoogleSignin.disabled = true;
+    btnGoogleSignin.querySelector('span').textContent = 'Signing in...';
+    await signInWithGoogle();
+  } catch (error) {
+    showToast('Sign-in failed. Please try again.');
+    btnGoogleSignin.disabled = false;
+    btnGoogleSignin.querySelector('span').textContent = 'Sign in with Google';
+  }
+});
+
+// Auth state listener
+onAuthChange(async (user) => {
+  if (user) {
+    authSection.style.display = 'none';
+    ctaSection.style.display = 'block';
+    await loadRandomQuote(user);
+  } else {
+    authSection.style.display = 'flex';
+    quoteSection.style.display = 'none';
+    welcomeSection.style.display = 'none';
+    ctaSection.style.display = 'none';
+  }
+});
+
+// Load a random note as quote of the day
+async function loadRandomQuote(user) {
+  try {
+    const booksRef = collection(db, 'users', user.uid, 'books');
+    const booksSnap = await getDocs(booksRef);
+
+    if (booksSnap.empty) {
+      welcomeSection.style.display = 'flex';
+      quoteSection.style.display = 'none';
+      return;
+    }
+
+    // Gather all notes from all books
+    const allNotes = [];
+    for (const bookDoc of booksSnap.docs) {
+      const bookData = bookDoc.data();
+      const notesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes');
+      const notesSnap = await getDocs(notesRef);
+
+      notesSnap.docs.forEach(noteDoc => {
+        allNotes.push({
+          ...noteDoc.data(),
+          bookTitle: bookData.title,
+          bookCover: bookData.coverUrl
+        });
+      });
+    }
+
+    if (allNotes.length === 0) {
+      welcomeSection.style.display = 'flex';
+      quoteSection.style.display = 'none';
+      return;
+    }
+
+    // Pick random note
+    const randomNote = allNotes[Math.floor(Math.random() * allNotes.length)];
+
+    // Display
+    quoteNoteTitle.textContent = randomNote.title;
+    quoteNoteDesc.textContent = randomNote.description;
+    quoteBookTitle.textContent = randomNote.bookTitle;
+
+    if (randomNote.bookCover) {
+      quoteCoverImg.src = randomNote.bookCover;
+      quoteCoverImg.alt = randomNote.bookTitle;
+    } else {
+      quoteCoverImg.src = '';
+      quoteCoverImg.parentElement.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:1.5rem;">📖</span>';
+    }
+
+    quoteSection.style.display = 'flex';
+    welcomeSection.style.display = 'none';
+
+  } catch (error) {
+    console.error('Error loading quote:', error);
+    welcomeSection.style.display = 'flex';
+    quoteSection.style.display = 'none';
+  }
+}
+
+// Toast notification
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}

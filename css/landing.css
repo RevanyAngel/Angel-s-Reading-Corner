@@ -1,0 +1,294 @@
+/* ============================================
+   Landing Page Styles — Angel's Reading Corner
+   ============================================ */
+
+.landing-page {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ---- Background ---- */
+.landing-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('../assets/library-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.landing-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 248, 240, 0.25) 0%,
+    rgba(255, 248, 240, 0.15) 40%,
+    rgba(245, 230, 211, 0.55) 75%,
+    rgba(245, 230, 211, 0.85) 100%
+  );
+}
+
+/* ---- Content ---- */
+.landing-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  min-height: 100dvh;
+  padding: 2.5rem 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* ---- Header ---- */
+.landing-header {
+  text-align: center;
+  padding-top: 2rem;
+}
+
+.app-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  text-shadow: 0 2px 12px rgba(255, 248, 240, 0.8);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.app-subtitle {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin-top: 0.5rem;
+  font-weight: 400;
+  text-shadow: 0 1px 8px rgba(255, 248, 240, 0.9);
+}
+
+/* ---- Auth Section ---- */
+.auth-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 1.6rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btn-google:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.btn-google:active {
+  transform: translateY(0);
+}
+
+.btn-google svg {
+  flex-shrink: 0;
+}
+
+/* ---- Quote Section ---- */
+.quote-section,
+.welcome-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  animation: slideUp 0.6s ease 0.2s both;
+}
+
+.quote-card {
+  padding: 1.2rem;
+  width: 100%;
+}
+
+.quote-inner {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.quote-cover {
+  flex-shrink: 0;
+  width: 52px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--beige-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.quote-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.quote-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.quote-note-title {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 0.3rem;
+}
+
+.quote-note-desc {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.quote-book-title {
+  font-size: 0.75rem;
+  color: var(--blue-500);
+  font-weight: 600;
+  font-family: var(--font-heading);
+}
+
+.quote-book-title::before {
+  content: '— ';
+}
+
+/* Welcome */
+.welcome-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0;
+}
+
+.welcome-emoji {
+  font-size: 2rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.welcome-text {
+  font-size: 0.88rem;
+  color: var(--gray-500);
+  line-height: 1.6;
+}
+
+/* ---- CTA Bookshelf ---- */
+.cta-section {
+  width: 100%;
+  padding-bottom: 1rem;
+  animation: slideUp 0.6s ease 0.4s both;
+}
+
+.bookshelf-cta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1.1rem 1.5rem;
+  background: linear-gradient(135deg, var(--blue-300), var(--blue-500));
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  overflow: hidden;
+  animation: pulse-glow 3s ease-in-out infinite;
+  transition: all var(--transition-base);
+}
+
+.bookshelf-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(135, 206, 235, 0.4);
+}
+
+/* Sparkles */
+.cta-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.sparkle.s1 { top: 15%; left: 10%; animation-delay: 0s; }
+.sparkle.s2 { top: 25%; right: 15%; animation-delay: 0.5s; }
+.sparkle.s3 { bottom: 20%; left: 20%; animation-delay: 1s; }
+.sparkle.s4 { top: 40%; left: 50%; animation-delay: 0.3s; font-size: 0.5rem; }
+.sparkle.s5 { bottom: 30%; right: 25%; animation-delay: 1.3s; }
+
+.cta-content {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-icon {
+  font-size: 1.3rem;
+}
+
+.cta-arrow {
+  transition: transform var(--transition-base);
+}
+
+.bookshelf-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ---- Responsive ---- */
+@media (min-width: 768px) {
+  .landing-content {
+    max-width: 500px;
+    padding: 3rem 2rem;
+  }
+
+  .app-title {
+    font-size: 2.2rem;
+  }
+
+  .quote-card {
+    padding: 1.5rem;
+  }
+}
