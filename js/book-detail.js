@@ -2,7 +2,7 @@
 // Book Detail Page Logic — Angel's Reading Corner
 // ============================================
 import { db } from './firebase-config.js';
-import { logOut, onAuthChange, getCurrentUser } from './auth.js';
+import { logOut, onAuthChange, getCurrentUser, getUserProfile } from './auth.js';
 import {
   collection,
   doc,
@@ -91,10 +91,11 @@ const menuEmail = document.getElementById('menu-email');
 // ============================================
 onAuthChange(async (user) => {
   if (user) {
-    userAvatarImg.src = user.photoURL || '';
-    menuAvatar.src = user.photoURL || '';
-    menuName.textContent = user.displayName || 'User';
-    menuEmail.textContent = user.email || '';
+    const profile = getUserProfile(user);
+    userAvatarImg.src = profile.photoURL;
+    menuAvatar.src = profile.photoURL;
+    menuName.textContent = profile.displayName;
+    menuEmail.textContent = profile.email;
 
     if (!currentBookId) {
       showErrorState();

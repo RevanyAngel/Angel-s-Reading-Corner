@@ -2,7 +2,7 @@
 // Landing Page Logic — Angel's Reading Corner
 // ============================================
 import { db } from './firebase-config.js';
-import { signInWithGoogle, onAuthChange, getCurrentUser } from './auth.js';
+import { signInWithGoogle, signInAsGuest, onAuthChange, getCurrentUser } from './auth.js';
 import {
   collection,
   getDocs,
@@ -16,6 +16,7 @@ const quoteSection = document.getElementById('quote-section');
 const welcomeSection = document.getElementById('welcome-section');
 const ctaSection = document.getElementById('cta-section');
 const btnGoogleSignin = document.getElementById('btn-google-signin');
+const btnGuestSignin = document.getElementById('btn-guest-signin');
 const quoteCoverImg = document.getElementById('quote-cover-img');
 const quoteNoteTitle = document.getElementById('quote-note-title');
 const quoteNoteDesc = document.getElementById('quote-note-desc');
@@ -25,14 +26,33 @@ const quoteBookTitle = document.getElementById('quote-book-title');
 btnGoogleSignin.addEventListener('click', async () => {
   try {
     btnGoogleSignin.disabled = true;
+    if (btnGuestSignin) btnGuestSignin.disabled = true;
     btnGoogleSignin.querySelector('span').textContent = 'Signing in...';
     await signInWithGoogle();
   } catch (error) {
     showToast('Sign-in failed. Please try again.');
     btnGoogleSignin.disabled = false;
+    if (btnGuestSignin) btnGuestSignin.disabled = false;
     btnGoogleSignin.querySelector('span').textContent = 'Sign in with Google';
   }
 });
+
+// Guest (Anonymous) Sign-In handler
+if (btnGuestSignin) {
+  btnGuestSignin.addEventListener('click', async () => {
+    try {
+      btnGuestSignin.disabled = true;
+      btnGoogleSignin.disabled = true;
+      btnGuestSignin.querySelector('span').textContent = 'Entering as Guest...';
+      await signInAsGuest();
+    } catch (error) {
+      showToast('Guest entry failed. Please try again.');
+      btnGuestSignin.disabled = false;
+      btnGoogleSignin.disabled = false;
+      btnGuestSignin.querySelector('span').textContent = 'Masuk Tanpa Login (Tamu)';
+    }
+  });
+}
 
 // Auth state listener
 onAuthChange(async (user) => {
