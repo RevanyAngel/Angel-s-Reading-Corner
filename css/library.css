@@ -246,6 +246,38 @@
   padding: 0.15rem 0.45rem;
 }
 
+/* Reading progress on book card */
+.book-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.book-card-progress-track {
+  flex: 1;
+  height: 4px;
+  background: var(--beige-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.book-card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue-300), var(--blue-500));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.book-card-progress-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--blue-500);
+  font-family: var(--font-heading);
+  white-space: nowrap;
+}
+
+
 /* Animation delay for staggered grid */
 .book-card:nth-child(1) { animation-delay: 0s; }
 .book-card:nth-child(2) { animation-delay: 0.05s; }
@@ -591,6 +623,20 @@
   font-size: 1.5rem;
 }
 
+.stat-icon-text {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue-500);
+  background: var(--blue-50);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--blue-100);
+}
+
+
 .stat-value {
   font-family: var(--font-heading);
   font-size: 1.6rem;
@@ -679,10 +725,20 @@
 }
 
 .confirm-icon {
-  font-size: 2.5rem;
-  display: block;
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(232, 126, 126, 0.12);
+  color: var(--danger);
   margin-bottom: 0.5rem;
 }
+
 
 .confirm-body h3 {
   font-size: 1.05rem;

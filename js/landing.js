@@ -80,20 +80,45 @@ async function loadRandomQuote(user) {
       return;
     }
 
-    // Gather all notes from all books
+    // Gather all notes/entries from all books
     const allNotes = [];
     for (const bookDoc of booksSnap.docs) {
       const bookData = bookDoc.data();
       const notesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes');
       const notesSnap = await getDocs(notesRef);
 
-      notesSnap.docs.forEach(noteDoc => {
-        allNotes.push({
-          ...noteDoc.data(),
-          bookTitle: bookData.title,
-          bookCover: bookData.coverUrl
-        });
-      });
+      for (const noteDoc of notesSnap.docs) {
+        const noteData = noteDoc.data();
+
+        // Check if legacy note with description directly on doc
+        if (noteData.description) {
+          allNotes.push({
+            title: noteData.title,
+            description: noteData.description,
+            bookTitle: bookData.title,
+            bookCover: bookData.coverUrl
+          });
+        }
+
+        // Also check entries subcollection
+        try {
+          const entriesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes', noteDoc.id, 'entries');
+          const entriesSnap = await getDocs(entriesRef);
+          entriesSnap.docs.forEach(entryDoc => {
+            const entryData = entryDoc.data();
+            if (entryData.description) {
+              allNotes.push({
+                title: noteData.title,
+                description: entryData.description,
+                bookTitle: bookData.title,
+                bookCover: bookData.coverUrl
+              });
+            }
+          });
+        } catch (e) {
+          // ignore
+        }
+      }
     }
 
     if (allNotes.length === 0) {
@@ -115,7 +140,7 @@ async function loadRandomQuote(user) {
       quoteCoverImg.alt = randomNote.bookTitle;
     } else {
       quoteCoverImg.src = '';
-      quoteCoverImg.parentElement.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:1.5rem;">📖</span>';
+      quoteCoverImg.parentElement.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:1.5rem;color:var(--gray-400);">&#9998;</span>';
     }
 
     quoteSection.style.display = 'flex';

@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/library.css">
   <link rel="stylesheet" href="css/book-detail.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♡</text></svg>">
 </head>
 <body>
   <!-- ===== Top Bar ===== -->
@@ -18,6 +18,8 @@
       <span class="brand-name">Back to Library</span>
     </a>
     <div class="top-bar-actions">
+      <!-- Edit button shown only in view mode -->
+      <button id="btn-toggle-edit" class="btn-edit-text" style="display: none;" title="Edit book info">Edit</button>
       <div id="user-avatar" class="user-avatar" title="Account">
         <img id="user-avatar-img" src="" alt="User">
       </div>
@@ -46,7 +48,7 @@
 
     <!-- Error State -->
     <div id="error-state" class="empty-state" style="display: none;">
-      <div class="empty-illustration">⚠️</div>
+      <div class="empty-illustration">!</div>
       <h2>Book not found</h2>
       <p>This book might have been deleted or doesn't exist.</p>
       <a href="library.html" class="btn btn-primary" style="margin-top: 1rem;">Go back to Library</a>
@@ -76,9 +78,20 @@
                 <span></span>
               </span>
             </div>
+            <!-- Reading Progress Bar -->
+            <div id="reading-progress-wrap" class="reading-progress-wrap" style="display: none;">
+              <div class="progress-label-row">
+                <span class="progress-label">Reading Progress</span>
+                <span id="progress-percent" class="progress-percent">0%</span>
+              </div>
+              <div class="progress-bar-track">
+                <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+              </div>
+              <span id="progress-pages-info" class="progress-pages-info"></span>
+            </div>
             <div class="book-hero-actions">
-              <button id="btn-edit-book" class="btn btn-secondary btn-sm">✏️ Edit Book</button>
-              <button id="btn-delete-book" class="btn btn-danger btn-sm">🗑️ Delete Book</button>
+              <button id="btn-edit-book" class="btn btn-secondary btn-sm edit-mode-only">Edit Details</button>
+              <button id="btn-delete-book" class="btn btn-danger btn-sm edit-mode-only">Delete Book</button>
             </div>
           </div>
         </div>
@@ -88,49 +101,81 @@
       <section class="notes-page-section animate-slide-up">
         <div class="notes-page-header">
           <div class="notes-title-wrap">
-            <h2>📝 Notes & Insights</h2>
+            <h2>Notes &amp; Insights</h2>
             <span id="notes-count-badge" class="notes-count-badge">0 notes</span>
           </div>
-          <button id="btn-add-note" class="btn btn-primary btn-sm">+ Add Note</button>
+          <div class="notes-header-right">
+            <select id="notes-sort-select" class="notes-sort-select" aria-label="Sort notes by time">
+              <option value="asc">Oldest First (Asc)</option>
+              <option value="desc">Newest First (Desc)</option>
+            </select>
+            <button id="btn-add-note" class="btn btn-primary btn-sm edit-mode-only">+ Add Note</button>
+          </div>
         </div>
 
-        <!-- Add/Edit Note Form -->
-        <div id="note-form-wrap" class="note-form-wrap card" style="display: none;">
-          <h3 id="note-form-title" style="margin-bottom: 0.8rem; font-size: 0.95rem;">New Note</h3>
-          <form id="form-note" class="form-note" autocomplete="off">
-            <input type="hidden" id="note-edit-id" value="">
-            <div class="form-group">
-              <label for="note-title">Note Title</label>
-              <input type="text" id="note-title" placeholder="e.g., Key take-away from Chapter 3" required>
-            </div>
-            <div class="form-group">
-              <label for="note-desc">Description / Thoughts</label>
-              <textarea id="note-desc" placeholder="Write your insights, quotes, or learnings here..." required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="note-page">Page / Chapter (optional)</label>
-              <input type="text" id="note-page" placeholder="e.g., Page 42 or Chapter 5">
-            </div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-note">Cancel</button>
-              <button type="submit" class="btn btn-primary btn-sm" id="btn-save-note">Save Note</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Notes List -->
+        <!-- Notes List (grouped by chapter) -->
         <div id="notes-list" class="notes-list">
           <!-- Notes rendered dynamically -->
         </div>
 
         <div id="notes-empty" class="empty-state notes-empty" style="display: none;">
-          <div class="empty-illustration" style="font-size: 2.5rem;">✍️</div>
+          <div class="empty-illustration" style="font-size: 2.5rem;">✍</div>
           <h3>No notes recorded yet</h3>
           <p>Add your first note or chapter insight for this book!</p>
         </div>
       </section>
     </div>
   </main>
+
+  <!-- ===== MODAL: Add Note ===== -->
+  <div id="modal-add-note" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Note</h2>
+        <button class="modal-close" data-close="modal-add-note" aria-label="Close">✕</button>
+      </div>
+      <form id="form-add-note" autocomplete="off">
+        <div class="form-group">
+          <label for="new-note-title">Note Title</label>
+          <input type="text" id="new-note-title" placeholder="e.g., Insight from Chapter 3" required>
+        </div>
+        <div class="form-group">
+          <label for="new-note-chapter">Chapter</label>
+          <input type="text" id="new-note-chapter" placeholder="e.g., Chapter 1" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-sm" data-close="modal-add-note">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btn-save-new-note">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: Add Note Entry ===== -->
+  <div id="modal-note-entry" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-note-entry-title">Add Entry</h2>
+        <button class="modal-close" data-close="modal-note-entry" aria-label="Close">✕</button>
+      </div>
+      <form id="form-note-entry" autocomplete="off">
+        <input type="hidden" id="note-entry-note-id">
+        <input type="hidden" id="note-entry-entry-id">
+        <div class="form-group">
+          <label for="note-entry-desc">Description</label>
+          <textarea id="note-entry-desc" placeholder="Write your insights, quotes, or learnings here..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="entry-date-label">Date</label>
+          <p id="note-entry-date-display" class="entry-date-auto"></p>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-sm" data-close="modal-note-entry">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btn-save-note-entry">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ===== MODAL: Edit Book ===== -->
   <div id="modal-add-book" class="modal-overlay" aria-hidden="true">
@@ -168,9 +213,14 @@
             <input type="date" id="book-date" required>
           </div>
           <div class="form-group">
-            <label for="book-pages">Pages</label>
-            <input type="number" id="book-pages" placeholder="0" min="1" required>
+            <label for="book-total-pages">Total Pages</label>
+            <input type="number" id="book-total-pages" placeholder="e.g. 320" min="1">
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="book-pages-done">Pages Done</label>
+          <input type="number" id="book-pages-done" placeholder="e.g. 150" min="0">
         </div>
 
         <div class="form-group">
@@ -222,7 +272,7 @@
   <div id="modal-confirm-delete" class="modal-overlay" aria-hidden="true">
     <div class="modal-content modal-confirm-content">
       <div class="confirm-body">
-        <span class="confirm-icon">⚠️</span>
+        <span class="confirm-icon">!</span>
         <h3 id="confirm-title">Delete this book?</h3>
         <p id="confirm-desc">This will permanently delete the book and all its notes.</p>
       </div>

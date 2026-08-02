@@ -27,7 +27,7 @@ export async function getReadingStats() {
   for (const bookDoc of booksSnap.docs) {
     totalBooks++;
     const bookData = bookDoc.data();
-    totalPages += bookData.pageCount || 0;
+    totalPages += bookData.totalPages || bookData.pageCount || 0;
 
     // Track books by month
     if (bookData.dateRead) {

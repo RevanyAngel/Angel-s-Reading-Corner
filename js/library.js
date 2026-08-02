@@ -74,8 +74,10 @@ const bookCoverInput = document.getElementById('book-cover-input');
 const coverUploadArea = document.getElementById('cover-upload-area');
 const coverPreview = document.getElementById('cover-preview');
 const bookDateInput = document.getElementById('book-date');
-const bookPagesInput = document.getElementById('book-pages');
+const bookTotalPagesInput = document.getElementById('book-total-pages');
+const bookPagesDoneInput = document.getElementById('book-pages-done');
 const bookGenreInput = document.getElementById('book-genre');
+
 const bookRatingEl = document.getElementById('book-rating');
 const btnSaveBookText = document.getElementById('btn-save-book-text');
 
@@ -259,7 +261,19 @@ function renderBooks() {
     const starsHTML = generateStars(book.rating || 0);
     const coverHTML = book.coverUrl
       ? `<img src="${book.coverUrl}" alt="${escapeHtml(book.title)}" loading="lazy">`
-      : `<div class="cover-placeholder">📖<span>${escapeHtml(book.title)}</span></div>`;
+      : `<div class="cover-placeholder" style="font-size:2rem;color:var(--gray-400);">&#9998;<span>${escapeHtml(book.title)}</span></div>`;
+
+    const totalPages = book.totalPages || 0;
+    const pagesDone = book.pagesDone || 0;
+    const pct = totalPages > 0 ? Math.min(Math.round((pagesDone / totalPages) * 100), 100) : null;
+    const progressHTML = pct !== null ? `
+      <div class="book-card-progress">
+        <div class="book-card-progress-track">
+          <div class="book-card-progress-fill" style="width:${pct}%;"></div>
+        </div>
+        <span class="book-card-progress-label">${pct}%</span>
+      </div>
+    ` : '';
 
     card.innerHTML = `
       <div class="book-card-cover">${coverHTML}</div>
@@ -269,6 +283,7 @@ function renderBooks() {
           <div class="star-rating-display">${starsHTML}</div>
           <span class="genre-badge">${escapeHtml(book.genre || '')}</span>
         </div>
+        ${progressHTML}
       </div>
     `;
 
@@ -277,6 +292,7 @@ function renderBooks() {
     });
     bookGrid.appendChild(card);
   });
+
 }
 
 // Search, filter, sort listeners
@@ -355,10 +371,12 @@ formBook.addEventListener('submit', async (e) => {
     const bookData = {
       title: bookTitleInput.value.trim(),
       dateRead: Timestamp.fromDate(new Date(bookDateInput.value)),
-      pageCount: parseInt(bookPagesInput.value) || 0,
+      totalPages: parseInt(bookTotalPagesInput.value) || 0,
+      pagesDone: parseInt(bookPagesDoneInput.value) || 0,
       genre: bookGenreInput.value,
       rating: selectedRating,
     };
+
 
     if (coverUrl) {
       bookData.coverUrl = coverUrl;
@@ -368,14 +386,15 @@ formBook.addEventListener('submit', async (e) => {
       // Update existing book
       const bookRef = doc(db, 'users', user.uid, 'books', editId);
       await updateDoc(bookRef, bookData);
-      showToast('Book updated! ✏️');
+      showToast('Book updated');
     } else {
       // Add new book
       bookData.coverUrl = coverUrl || '';
       bookData.createdAt = serverTimestamp();
       await addDoc(collection(db, 'users', user.uid, 'books'), bookData);
-      showToast('Book added! 📚');
+      showToast('Book added');
     }
+
 
     closeModal(modalAddBook);
     await loadBooks();
@@ -427,14 +446,16 @@ btnConfirmDelete.addEventListener('click', async () => {
 
       // Delete the book
       await deleteDoc(doc(db, 'users', user.uid, 'books', deleteTarget.bookId));
-      showToast('Book deleted 🗑️');
+      showToast('Book deleted');
+
 
       closeModal(modalConfirmDelete);
       await loadBooks();
     } else if (deleteTarget.type === 'note') {
       const noteRef = doc(db, 'users', user.uid, 'books', deleteTarget.bookId, 'notes', deleteTarget.noteId);
       await deleteDoc(noteRef);
-      showToast('Note deleted 🗑️');
+      showToast('Note deleted');
+
 
       closeModal(modalConfirmDelete);
     }
