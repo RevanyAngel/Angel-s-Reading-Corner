@@ -89,34 +89,39 @@ async function loadRandomQuote(user) {
 
       for (const noteDoc of notesSnap.docs) {
         const noteData = noteDoc.data();
+        const chapterStr = noteData.chapter || noteData.pageOrChapter || '';
+        const fullNoteTitle = chapterStr ? `${chapterStr}: ${noteData.title}` : (noteData.title || '');
 
-        // Check if legacy note with description directly on doc
-        if (noteData.description) {
+        let hasEntries = false;
+        try {
+          const entriesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes', noteDoc.id, 'entries');
+          const entriesSnap = await getDocs(entriesRef);
+          if (!entriesSnap.empty) {
+            hasEntries = true;
+            entriesSnap.docs.forEach(entryDoc => {
+              const entryData = entryDoc.data();
+              if (entryData.description) {
+                allNotes.push({
+                  title: fullNoteTitle,
+                  description: entryData.description,
+                  bookTitle: bookData.title,
+                  bookCover: bookData.coverUrl
+                });
+              }
+            });
+          }
+        } catch (e) {
+          // ignore
+        }
+
+        // Fallback for legacy note format if no sub-entries
+        if (!hasEntries && noteData.description) {
           allNotes.push({
-            title: noteData.title,
+            title: fullNoteTitle,
             description: noteData.description,
             bookTitle: bookData.title,
             bookCover: bookData.coverUrl
           });
-        }
-
-        // Also check entries subcollection
-        try {
-          const entriesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes', noteDoc.id, 'entries');
-          const entriesSnap = await getDocs(entriesRef);
-          entriesSnap.docs.forEach(entryDoc => {
-            const entryData = entryDoc.data();
-            if (entryData.description) {
-              allNotes.push({
-                title: noteData.title,
-                description: entryData.description,
-                bookTitle: bookData.title,
-                bookCover: bookData.coverUrl
-              });
-            }
-          });
-        } catch (e) {
-          // ignore
         }
       }
     }

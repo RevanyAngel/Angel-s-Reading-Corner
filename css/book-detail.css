@@ -184,30 +184,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.8rem;
   padding: 0 0.2rem;
 }
 
 .notes-title-wrap {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .notes-title-wrap h2 {
   font-size: 1.15rem;
+  line-height: 1.2;
 }
 
 .notes-header-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  margin-left: auto;
 }
 
 .notes-sort-select {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-family: var(--font-heading);
   font-weight: 600;
-  padding: 0.35rem 1.8rem 0.35rem 0.65rem;
+  padding: 0.35rem 1.6rem 0.35rem 0.6rem;
   border-radius: var(--radius-full);
   background-color: var(--bg-card);
   border: 1.5px solid var(--beige-300);
@@ -230,6 +235,8 @@
   background: var(--blue-100);
   color: var(--blue-600);
   font-family: var(--font-heading);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .notes-list {
@@ -335,7 +342,12 @@
   color: var(--text-secondary);
   line-height: 1.6;
   white-space: pre-wrap;
-  padding-right: 6rem;
+  padding-right: 0;
+}
+
+/* Add padding for action buttons only when not in reading mode */
+.detail-container:not(.reading-mode) .note-entry-desc {
+  padding-right: 4.5rem;
 }
 
 .note-entry-date {
