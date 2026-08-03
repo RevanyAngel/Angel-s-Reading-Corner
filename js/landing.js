@@ -92,12 +92,10 @@ async function loadRandomQuote(user) {
         const chapterStr = noteData.chapter || noteData.pageOrChapter || '';
         const fullNoteTitle = chapterStr ? `${chapterStr}: ${noteData.title}` : (noteData.title || '');
 
-        let hasEntries = false;
         try {
           const entriesRef = collection(db, 'users', user.uid, 'books', bookDoc.id, 'notes', noteDoc.id, 'entries');
           const entriesSnap = await getDocs(entriesRef);
           if (!entriesSnap.empty) {
-            hasEntries = true;
             entriesSnap.docs.forEach(entryDoc => {
               const entryData = entryDoc.data();
               if (entryData.description) {
@@ -114,15 +112,6 @@ async function loadRandomQuote(user) {
           // ignore
         }
 
-        // Fallback for legacy note format if no sub-entries
-        if (!hasEntries && noteData.description) {
-          allNotes.push({
-            title: fullNoteTitle,
-            description: noteData.description,
-            bookTitle: bookData.title,
-            bookCover: bookData.coverUrl
-          });
-        }
       }
     }
 
